@@ -2,11 +2,15 @@
 
 ## JS基础
 
+[JavaScript 和 HTML DOM 参考手册 (w3school.com.cn)](https://www.w3school.com.cn/jsref/index.asp)
+
 脚本语言：运行过程中由js引擎逐行解释执行。
 
 编译： 将源码编译为中间码，最后解释执行
 
 最初是用来执行表单验证。
+
+JS是单线程程序
 
 **HTML中使用双引号， JS中使用单引号**
 
@@ -1763,7 +1767,7 @@ element.onclick = function(){
 test.innerHTML = 'this is gal';
 // 无法识别标签 IE发起的。获得去除空格或换行的纯文本信息
 test.innerText = '</br>this is gal';
-// 获取表单具有value属性的value值
+// 获取表单具有value属性的value值 注意button通过innderHTMLx修改
 test.value 
 ```
 
@@ -1776,7 +1780,7 @@ img.title
 
 ##### 表单属性
 
-type、vue、checked、selected、disabled
+type、value、checked、selected、disabled
 
 ```js
 let test = document.querySelector('#button');
@@ -2193,6 +2197,453 @@ element.appendChild(element);
 </html>
 ```
 
+### BOM
+
+浏览器对象： 浏览器私有实现的对象，有严重的兼容问题。实现浏览器的功能
+
+* Global:
+
+​     Global对象是单体内置对象，即不依赖于宿主环境的对象，这些对象在ECMAScript程序执行之前就已经存在了，就是一切全局里存在的变量和函数都是它的属性和方法，即“终极老祖宗”。也就是那些在宿主环境（常见的宿主环境：浏览器和nodejs）里所有的内建或自定义的变量和函数全局都是Global这个的全局对象和方法。它更像是一个抽象概念，而要指明它是什么，取决于程序在什么环境中运行。（例如：js不仅可以书写页面，在书写页面中，global相对于浏览器这个环境而言就是window，但是其他环境就不一定。
+
+​     window对象是相对于Web浏览器而言的，它并不是ECMAScript规定的内置对象，它是浏览器的Web API,是存在于浏览器之中的，也就是离开浏览器这个宿主环境的话就不存在此对象了。所以说Global对象是包含于window对象这种情况的。
+
+* window
+
+window 是客户端浏览器对象模型的基类，window 对象是客户端 [JavaScript](http://c.biancheng.net/js/) 的全局对象。一个 window 对象实际上就是一个独立的窗口，对于框架页面来说，浏览器窗口每个框架都包含一个 window 对象。所有的全局变量都被解析为该对象的属性。
+
+- window：客户端 JavaScript 顶层对象。每当 <body> 或 <frameset> 标签出现时，window 对象就会被自动创建。
+- navigator：包含客户端有关浏览器信息。
+- screen：包含客户端屏幕的信息。
+- history：包含浏览器窗口访问过的 URL 信息。
+- location：包含当前网页文档的 URL 信息。
+- document：包含整个 HTML 文档，可被用来访问文档内容及其所有页面元素。
+
+#### 使用系统对话框
+
+window 对象定义了 3 个人机交互的方法，主要方便对 JavaScript 代码进行调试。
+
+- alert()：确定提示框。由浏览器向用户弹出提示性信息。该方法包含一个可选的提示信息参数。如果没有指定参数，则弹出一个空的对话框。
+- confirm()：选择提示框。。由浏览器向用户弹出提示性信息，弹出的对话框中包含两个按钮，分别表示“确定”和“取消”按钮。如果点击“确定”按钮，则该方法将返回 true；单击“取消”按钮，则返回 false。confirm() 方法也包含一个可选的提示信息参数，如果没有指定参数，则弹出一个空的对话框。
+- prompt()：输入提示框。可以接收用户输入的信息，并返回输入的信息。prompt() 方法也包含一个可选的提示信息参数，如果没有指定参数，则弹出一个没有提示信息的输入文本对话框。
+
+```js
+window.open (URL, name, features, replace)
+win.close();
+使用 window.closed 属性可以检测当前窗口是否关闭，如果关闭则返回 true，否则返回 false。
+```
+
+```js
+win = window.open();  //打开新的空白窗口
+win.document.write ("<h1>这是新打开的窗口</h1>");  //在新窗口中输出提示信息
+win.focus ();  //让原窗口获取焦点
+win.opener.document.write ("<h1>这是原来窗口</h1>");  //在原窗口中输出提示信息
+console.log(win.opener == window);  //检测window.opener属性值
+win.close(); //关闭新打开的
+window.close（）; /
+```
+
+####  load事件
+
+会等待页面加载完毕后再执行load事件，js 可以写在任意位置了。 
+
+```js
+window.onload = function () {}
+```
+
+但这种写法，只能生效最后一个onload。
+
+下面的没有限制
+
+```js
+ window.addEventListener('load', function () { })
+```
+
+```js
+document.addEventListener('DOMContentLoaded', function () {})
+```
+
+只有当DOM加载完毕后，才触发，不包括样式表和图片、flash等 IE9. 当图片等较大时，改事件用户体验好
+
+触发load事件的情况；
+
+1. a 的跳转
+2. f5
+3. 前进后退
+
+但火狐缓存了整个页面的信息。后退不能刷新。不能触发load。`pageshow`会在load事件后，页面显示触发；根据Event中的`persisted`判断是否是缓存中
+
+的页面触发的pageshow
+
+#### 窗口调整
+
+```js
+window.addEventListener('resize',function () {
+   //  检测window宽度
+	window.innerWidth
+})
+```
+
+####  定时器
+
+* setTimeout 只执行一次的定时器，单位毫秒， 
+
+```js
+// window.setTimeout(fn, mills)
+// window.setTimeout(‘fn（）’, mills)
+let timer = window.setTimeout(fn, 3000)
+// 停止计时器
+window.clearTimeout(timer)
+```
+
+* setIntervalL 反复调用回调函数
+
+* ```js
+  
+   function fn() {
+    	// 时分秒实现
+  }
+  // 为防止刷新后的第一秒页面空白 先执行fn
+  fn();
+  let timer = window.setInterval(fn, 3000)
+  //清除计时器
+  window.clearInterval(timer)
+  
+  let btn = document.querySelector('.btn');
+      let time = 3;
+      btn.addEventListener('click', function () {
+          btn.disabled = true;
+          let timer = setInterval(function () {
+              if(time === 0){
+                  clearInterval(timer);
+                  btn.disabled = false;
+                  btn.innerHTML = 'send';
+                  time = 3;
+              }else {
+                  btn.innerHTML = `还剩下{$time}秒`;
+                  time--;
+              }
+          }, 1000)
+  ```
+
+#### this
+
+todo: this
+
+1. 局作用域下 和 普通函数调用中this指向window
+
+```
+console.log(this);
+
+function f() {
+ 	console.log(this);
+}
+```
+
+2. 方法调用中，指向调用者
+3. 构造函数中this指向构造函数的实例
+
+####  同异步
+
+* 同步任务
+
+  所有同步任务都在主线程的执行栈上
+
+* 异步任务
+
+  异步任务是回调函数实现， 所有相关回调函数都添加到任务队列中
+
+  1. 普通事件
+  2. 资源加载 load error
+  3. 定时器
+
+```js
+console.log(1); // 先执行同步
+setTimeout(f, 0)// 将回调函数放入队列
+console.log(2); // 执行同步，等待执行栈的同步任务执行完毕，再执行栈依次执行队列的异步任务。
+function f() {
+    console.log(3);
+}
+// 输出 1 2 3
+```
+
+
+
+todo: js执行机制
+
+#### JS机制
+
+主线程执行栈将异步任务给异步进程处理回调任务，如果触发回调，异步进程将其写入任务队列。等待同步任务执行完毕后。会轮询任务队列。这被称为事件循环
+
+####  location
+
+URI，统一资源标志符(Uniform Resource Identifier， URI)，表示的是web上每一种可用的资源，如 HTML文档、图像、视频片段、程序等都由一个URI进行标识的。
+
+URL（Uniform Resource Locator,统一资源定位器），它是WWW的统一资源定位标志，就是指网络地址。URL是URI的一个子集。
+
+`protocol :// hostname[:port] / path / [:parameters][?query]#fragment`
+
+[URL格式_百度百科 (baidu.com)](https://baike.baidu.com/item/URL格式/10056474?fr=aladdin)
+
+| hash                                                         | 设置或返回从井号 (#) 开始的 URL（锚）。       |
+| ------------------------------------------------------------ | --------------------------------------------- |
+| [host](https://www.w3school.com.cn/jsref/prop_loc_host.asp)  | 设置或返回主机名和当前 URL 的端口号。         |
+| [hostname](https://www.w3school.com.cn/jsref/prop_loc_hostname.asp) | 设置或返回当前 URL 的主机名。                 |
+| [href](https://www.w3school.com.cn/jsref/prop_loc_href.asp)  | 设置或返回完整的 URL。直接前往地址，没有后退  |
+| [pathname](https://www.w3school.com.cn/jsref/prop_loc_pathname.asp) | 设置或返回当前 URL 的路径部分。               |
+| [port](https://www.w3school.com.cn/jsref/prop_loc_port.asp)  | 设置或返回当前 URL 的端口号。                 |
+| [protocol](https://www.w3school.com.cn/jsref/prop_loc_protocol.asp) | 设置或返回当前 URL 的协议。                   |
+| [search](https://www.w3school.com.cn/jsref/prop_loc_search.asp) | 设置或返回从问号 (?) 开始的 URL（查询部分）。 |
+
+| 属性                                                         | 描述                                                         |
+| :----------------------------------------------------------- | :----------------------------------------------------------- |
+| [assign()](https://www.w3school.com.cn/jsref/met_loc_assign.asp) | 加载新的文档。重定向页面：记录历史,可后退                    |
+| [reload()](https://www.w3school.com.cn/jsref/met_loc_reload.asp) | 重新加载当前文档（点击刷新）。false = ′f5’ true = ctrl  f5 = 刷新缓存 |
+| [replace()](https://www.w3school.com.cn/jsref/met_loc_replace.asp) | 用新的文档替换当前文档。没有历史，无法后退                   |
+
+```js
+let btn = document.querySelector('.btn');
+let div = document.querySelector('div');
+
+
+btn.addEventListener('click', function () {
+    location.href = 'https://www.sina.com.cn/'
+})
+let time = 10;
+fn();
+function fn() {
+    if(!time){
+        time = 10;
+        // 自动跳转页面，不打开新页面
+        location.href = 'https://www.sina.com.cn/'
+
+    }else {
+        div.innerHTML = `还剩${time}秒跳转首页`
+        time --;
+    }
+
+}
+
+setInterval(fn, 1000)
+```
+
+#### navigator
+
+Navigator 对象包含有关浏览器的信息。
+
+[js判断浏览器版本以及浏览器内核的方法_javascript技巧_脚本之家 (jb51.net)](https://www.jb51.net/article/60121.htm)
+
+#### History
+
+History 对象包含用户（在浏览器窗口中）访问过的 URL。
+
+History 对象是 window 对象的一部分，可通过 window.history 属性对其进行访问。
+
+| [ length](https://www.w3school.com.cn/jsref/prop_his_length.asp) | 返回浏览器历史列表中的 URL 数量。 |
+| ------------------------------------------------------------ | --------------------------------- |
+
+| [back()](https://www.w3school.com.cn/jsref/met_his_back.asp) | 加载 history 列表中的前一个 URL。   |
+| ------------------------------------------------------------ | ----------------------------------- |
+| [forward()](https://www.w3school.com.cn/jsref/met_his_forward.asp) | 加载 history 列表中的下一个 URL。   |
+| [go()](https://www.w3school.com.cn/jsref/met_his_go.asp)     | 加载 history 列表中的某个具体页面。 |
+
+###  网页特效
+
+####  元素偏移offset
+
+动态获取元素的位置，相对于定位的父元素，不带单位
+
+如果父亲没有定位，则以body为准
+
+* offsetTop
+* offsetLeft ： 盒子相对定位父元素的距离
+* offsetWidth: 包含width， padding、 border的盒子的大小
+* offsetHeight
+* offsetParent: 该元素带有定位的父元素。如果没有返回body， `parentNode` 返回亲父亲
+
+style 与 offset的区别：
+
+style： *
+
+*  只能获取行内样式值，* 
+* 获取值带有px单位，* 
+
+* style。width不包含padding和border
+
+* 可读写
+* 适用于更改值
+
+offset:
+
+* 可以读取任意样式表中的样式
+
+* 数值没有单位
+* 包含width， padding、 border
+* 只能读取
+* 适用于获取实际大小和位置
+
+```js
+let div = document.querySelector('.box');
+// 获取鼠标在盒子里的坐标 
+div.addEventListener('mousemove', function (e) {
+    let x = e.pageX - this.offsetLeft;
+    let y = e.pageY - this.offsetTop;
+    let left = e.pageX - x;
+    let top = e.pageY - y;
+})
+```
+
+模态框
+
+触发， keydown（获取鼠标在盒子里的坐标 ） move(改变left、 top)  keyup(移除move)
+
+京东放大镜
+
+```js
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <!--以ie浏览器的最高版本内核渲染页面-->
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        .preview_img {
+            width: 400px;
+            height:300px;
+            border: 1px solid #ccc;
+            position: relative;
+            margin: 100px auto;
+            /*cursor: move;*/
+        }
+        .preview_img>img {
+            width: 100%;
+        }
+        .mask {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200px;
+            height: 200px;
+            background-color: yellow;
+            opacity: .1;
+            cursor: move;
+        }
+        .back {
+            display: none;
+            width: 500px;
+            height: 500px;
+            position: absolute;
+            left: 410px;
+            top:0;
+            background-color: #cccccc;
+            z-index: 999;
+            border: 1px solid #ccc;
+            overflow: hidden;
+        }
+        .back>img {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+    </style>
+    
+    <title></title>
+</head>
+<body>
+<div class="preview_img">
+    <img src="images/girls.jpg" alt="">
+    <div class="mask"></div>
+    <div class="back">
+        <img src="images/girls.jpg" alt="" class="big">
+    </div>
+</div>
+</body>
+<script>
+    let preview_img = document.querySelector('.preview_img')
+    let mask = document.querySelector('.mask');
+    let back = document.querySelector('.back');
+
+    preview_img.addEventListener('mouseover', function (e) {
+        mask.style.display = 'block';
+        back.style.display = 'block';
+
+
+    })
+    preview_img.addEventListener('mouseout', function () {
+        mask.style.display = 'none';
+        back.style.display = 'none';
+    })
+    preview_img.addEventListener('mousemove',function (e) {
+        // 获取鼠标在盒子位置
+        let x = e.pageX - this.offsetLeft;
+        let y = e.pageY - this.offsetTop;
+        // 控制黄色区域在盒子呢移动
+        let left =  x - mask.offsetWidth/2;
+        let top = y - mask.offsetHeight/2;
+        let maskMaxX = preview_img.offsetWidth - mask.offsetWidth;
+        let maskMaxY = preview_img.offsetHeight - mask.offsetHeight;
+        if (left <= 0 ){
+            left = 0 ;
+        }else if(left >= maskMaxX) {
+           left = maskMaxX;
+        }
+        if (top <= 0 ){
+            top = 0 ;
+        }else if(top >= maskMaxY) {
+            top = maskMaxY;
+        }
+        mask.style.left = left + 'px';
+        mask.style.top = top + 'px';
+
+        // 算大图移动  大图移动距离 = 遮挡移动 * 大图移动最大距离 / 遮挡移动最大距离
+        // 大图
+        let big = document.querySelector('.big');
+        // 大图最大移动距离
+        let bigMaxX = big.offsetWidth - back.offsetWidth;
+        let bigMaxY = big.offsetHeight - back.offsetHeight;
+        // 大图移动距离
+        let bigX = left * bigMaxX / maskMaxX;
+        let bigY = top * bigMaxY / maskMaxY;
+        big.style.left = - bigX + 'px';
+        big.style.top = - bigY + 'px';
+
+    })
+
+</script>
+</html>
+```
+
+#### 元素可视区 client
+
+* clientTop
+* clientLeft ： 返回元素左边框的大小。
+* clientWidth: 返回包含padding + 内容区width的宽度， 不包含border，不带单位
+* clientHeight
+
+#### 元素滚动scroll
+
+* scrollTop
+* scrollLeft ： 返回被卷去的左侧距离， 隐藏的大小
+* scrollWidth: 返回自身的实际宽度， 不包含border，不带单位。 当出现滚动时，client无法获取实际宽度
+* scrollHeight
+
+确定事件源 document， 事件 scroll， 
+
+判断页面卷起的头部使用，``window.pageYoffset`, `element.scrollTop` 判断元素卷起的大小
+
+淘宝侧边栏
+
+```js
+
+```
+
 
 
 ## 技巧
@@ -2204,7 +2655,16 @@ element.appendChild(element);
 <a href="javascript:;">@me</a>
 ```
 
+### 立即执行函数
 
+匿名函数并且执行,被当做一个语句
+
+独立创建了作用域,解决冲突问题
+
+```js
+( function () {}) ();
+( function () {}() );
+```
 
 ## **专栏**
 
@@ -2235,6 +2695,18 @@ indexOf()
 [JS 内存分配](https://blog.csdn.net/qq_40028324/article/details/92970588)
 
 [js常见的内存泄漏 - cwxwdm - 博客园 (cnblogs.com)](https://www.cnblogs.com/cwxwdm/p/10845376.html)
+
+this :总结
+
+todo: 回调地狱
+
+todo:JS执行机制
+
+todo：iframe
+
+todo: codepen
+
+todo: flexible.js代码
 
 ### 查找属性，类型信息
 
