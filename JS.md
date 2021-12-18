@@ -1749,6 +1749,10 @@ e.keycode: 弃用
 
 也可通过Xxxkey判断功能键
 
+**mouseover**: 鼠标经过子元素也会触发事件，触发两次
+
+**mouseenter**: 鼠标经过子元素不会触发事件， 该事件不会冒泡（搭配mouseleave）
+
 #### 操作元素
 
 ##### 修改文本
@@ -2636,11 +2640,614 @@ div.addEventListener('mousemove', function (e) {
 
 确定事件源 document， 事件 scroll， 
 
-判断页面卷起的头部使用，``window.pageYoffset`, `element.scrollTop` 判断元素卷起的大小
+判断页面卷起的头部使用，``window.scrollY`, `element.scrollTop` 判断元素卷起的大小
 
 淘宝侧边栏
 
+注意兼容问题
+
 ```js
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <!--以ie浏览器的最高版本内核渲染页面-->
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        .w {
+            width: 1200px;
+            margin: 10px auto;
+        }
+        .slider-bar {
+            position: absolute;
+            width: 45px;
+            height: 130px;
+            top: 300px;
+            left: 50%;
+            margin-left: 600px;
+            background-color: aqua;
+        }
+        .header {
+            height: 150px;
+            background-color: green;
+        }
+        .banner {
+            height: 400px;
+            background-color: gray;
+        }
+        .main {
+            height: 1000px;
+            background-color: yellow;
+        }
+        span {
+            position: absolute;
+            display: none;
+            bottom: 0;
+            background-color: #985f0d;
+        }
+
+    </style>
+
+    <title></title>
+</head>
+<body>
+<div class="slider-bar">
+    <span class="goBack">go top</span>
+</div>
+<div class="header w">头部区域</div>
+<div class="banner w">banner</div>
+<div class="main w">主题</div>
+
+
+</body>
+<script>
+    let sliderBar = document.querySelector('.slider-bar');
+    let banner = document.querySelector('.banner');
+    let main = document.querySelector('.main');
+    let goBack = document.querySelector('.goBack');
+    // 被卷曲的大小
+    let bannerTop = banner.offsetTop;
+    let mainTop = main.offsetTop;
+    // console.log(mainTop)
+    // 获取固定定位之后的顶部值
+    let sliderBarTop = sliderBar.offsetTop - bannerTop;
+    // window.scrollY
+    document.addEventListener('scroll', function () {
+        if(window.scrollY >= bannerTop ){
+            sliderBar.style.position = 'fixed';
+            // 为了滚丁顺滑
+            sliderBar.style.top = sliderBarTop + 'px';
+        }else {
+            sliderBar.style.position = 'absolute';
+            // 为了滚动顺滑
+            sliderBar.style.top = 300 + 'px';
+        }
+        // console.log(window.scrollY)
+        if(window.scrollY >= mainTop ){
+            goBack.style.display = 'block';
+        }else {
+            goBack.style.display = 'none';
+        }
+
+    })
+    function animate (element, target, callback){
+        // 未解决元素的定时器多开问题
+       if(!element.timer){
+           element.timer = setInterval(function () {
+               let step =  (target - window.scrollY)  / 10;
+               step = step > 0 ? Math.ceil(step) : Math.floor(step);
+               if (window.scrollY === target){
+                   clearInterval( element.timer);
+                   // 结束时调用函数
+                   callback && callback();
+               }
+               console.log(step + window.scrollY)
+               // element.style.left = window.scrollY + step + 'px';
+               window.scroll (0, window.scrollY + step);
+           }, 30)
+       }else {
+           console.log('不要重复点击')
+       }
+    }
+    goBack.addEventListener('click',function () {
+        animate(window, 0);
+    })
+</script>
+</html>
+```
+
+#### 动画实现
+
+1. 获取盒子位置
+2. 移动位置
+3. 定时器操作
+4. 结束条件
+5. 元素定位
+
+```js
+todo ： 单例模式 
+// 必须先开启定位
+ function animate (element, target, callback){
+        // 未解决元素的定时器多开问题
+        clearInterval( element.timer);
+        element.timer = setInterval(function () {
+            if (element.offsetLeft === target){
+                clearInterval( element.timer);
+                // 结束时调用函数
+                if(callback){
+                    callback();
+                }
+            }
+            let step =  (target - element.offsetLeft)  / 10;
+            step = step > 0 ? Math.ceil(step) : Math.floor(step);
+            element.style.left = element.offsetLeft + step + 'px';
+        }, 300)
+    }
+```
+
+#### 轮播图
+
+* 鼠标进入显示点击按钮，离开会隐藏按钮
+* 点边侧的按钮，会切换图片，
+* 播放同时切换下面分页器
+* 分页器也会切换图片
+* 没有操作自动播放
+* 进过停止播放
+
+无缝滚动：
+
+```
+ 将第一个li复制一份放到最后。
+ 当ul滚动到最后的克隆图，让ul直接切换到第一张最左侧， left= 0;j=0。
+```
+
+```js
+    <div class="focus">
+        <a href="#" class="arrow-l">&lt;</a>
+        <a href="#" class="arrow-r">&gt;</a>
+		// ul应该比div大几倍，让li悬浮在一行
+        <ul>
+            <li>
+                <a href="#"><img src="images/girls.jpg" alt=""></a>
+            </li>
+        </ul>
+        <ol>
+            <li></li>
+            <li></li>
+            <li></li>
+        </ol>
+    </div>
+
+```
+
+todo:轮播图
+
+* 节流阀
+
+  在点击函数外声明一个flag=true，先判断flag = true执行动画同时将flag = flase; 在回调函数中  flag = true； callback && callback();
+
+##### 返回顶部
+
+#### 移动端
+
+#####  触屏事件
+
+* touchstart：触摸
+* touchmove: 在元素上移动
+* touchend： 离开
+
+##### touchEvent
+
+* touches: 记录触摸屏幕的所有手指的列表
+* targetTouches:记录触摸当前元素的手指列表
+* changesTouches: 手指状态发生了改变的列表。有无变化
+
+拖动元素：
+
+* touchstart: 获取元素的初始坐标和盒子的位置
+* touchmove： 计算手指的移动距离
+* touchend
+
+```js
+let div = document.querySelector('div');
+let startX = 0;
+let startY = 0;
+let y = 0;
+let x = 0;
+div.addEventListener('touchstart',function (e) {
+    startX = e.targetTouches[0].pageX;
+    startY = e.targetTouches[0].pageY;
+    x = this.offsetLeft;
+    y = this.offsetTop;
+})
+div.addEventListener('touchmove',function (e) {
+    let moveX = e.targetTouches[0].pageX - startX;
+    let moveY = e.targetTouches[0].pageY - startY;
+
+    this.style.left = x + moveX + 'px';
+    this.style.top = y + moveY + 'px';
+    // 阻止屏幕滚动行为
+    e.preventDefault()
+})
+```
+
+##### classList
+
+返回类的列表
+
+```js
+element.classList.add(name): 追加类名
+element.classList.remove(name):删除
+element.classList.taggle(name): 添加或取消
+```
+
+
+
+##### 移动端轮播图
+
+```js
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <!--以ie浏览器的最高版本内核渲染页面-->
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        ul,ol {
+            list-style: none;
+        }
+        .focus {
+            position: relative;
+            width: 750px;
+            padding-top: 44px;
+        }
+        .focus ol{
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+        }
+        .focus ul {
+            width: 500%;
+            overflow: hidden;
+            /*显示第一张*/
+            margin-left: -100%;
+        }
+        .focus ul li{
+            float: left;
+            width: 20%;
+        }
+        .focus ol li{
+            display: inline-block;
+            width: 10px;
+            height: 5px;
+            background-color: red;
+            transition: all .3s;
+        }
+        .focus img {
+            width: 100%;
+        }
+        .focus ol li.current {
+            width: 15px;
+        }
+
+
+    </style>
+
+    <title></title>
+</head>
+<body>
+<div class="focus">
+    <ul>
+        <!--补充最前-->
+        <li><img src="images/impact3.png" alt=""></li>
+
+        <li><img src="images/impact1.png" alt=""></li>
+        <li><img src="images/impact2.png" alt=""></li>
+        <li><img src="images/impact3.png" alt=""></li>
+        <!--补充最后-->
+        <li><img src="images/impact1.png" alt=""></li>
+    </ul>
+    <ol>
+        <li  class="current"></li>
+        <li></li>
+        <li></li>
+    </ol>
+</div>
+
+
+</body>
+<script>
+    let focus = document.querySelector('.focus');
+    let ul = focus.children[0];
+    let ol = focus.children[1];
+    let width = focus.offsetWidth;
+    let index = 0;
+    function play() {
+        index ++ ;
+        let translateX = -index * width
+        ul.style.transition = `all .3s`;
+        ul.style.transform = `translateX(${translateX}px)`;
+    }
+    let timer = setInterval(play, 3000);
+    // 监听过渡事件完成. 注意动画时间要短于 定时器
+    ul.addEventListener('transitionend',function (e) {
+        if(index >= 3){
+            index = 0;
+            let translateX = -index * width
+            ul.style.transition = 'none';
+            ul.style.transform = `translateX(${translateX}px)`;
+            // 倒着走
+        }else if(index < 0){
+            index = 2;
+            let translateX = -index * width
+            ul.style.transition = 'none';
+            ul.style.transform = `translateX(${translateX}px)`;
+        }
+        // 分页跟随
+        // 去除current
+        ol.querySelector('li.current').classList.remove('current');
+        ol.children[index].classList.add('current');
+    })
+    // 手指拖动
+    let startX = 0;
+    let moveX = 0;
+    let flag = false;
+    ul.addEventListener('touchstart',function (e) {
+        startX = e.targetTouches[0].pageX;
+        // 拖动时，暂停播放
+        timer && clearInterval(timer)
+    })
+    ul.addEventListener('touchmove',function (e) {
+        moveX = e.targetTouches[0].pageX - startX;
+        let translateX = -index * width + moveX;
+        // 取消动画
+        ul.style.transition = 'none';
+        ul.style.transform = `translateX(${translateX}px)`;
+        flag = true;
+        e.preventDefault();
+    })
+    // 松手
+    ul.addEventListener('touchend',function (e) {
+        // 判断是否移动
+        if (flag) {
+            if(Math.abs(moveX) > 50){
+                moveX > 0 ? index-- : index ++;
+                let translateX = -index * width;
+                ul.style.transition = `all .3s`;
+                ul.style.transform = `translateX(${translateX}px)`;
+            }else {
+                let translateX = -index * width;
+                ul.style.transform = `translateX(${translateX}px)`;
+            }
+        }
+        timer && clearInterval(timer);
+        timer = setInterval(play, 3000);
+    });
+
+</script>
+</html>
+```
+
+##### 点击延时
+
+移动端点击时，为了判断接下来的动作有300ms的延时。两手指捏大元素，双击缩放页面。
+
+* 禁用缩放， <meta name="viewport", user-scalable=no> 不方便
+
+* 判断触摸后是否滑动： 代码频繁
+
+  ```js
+      function tap(obj, callback) {
+          let isMove = false;
+          let startTime = 0;
+          obj.addEventListener('touchstart',function () {
+                  startTime = Date.now();
+          })
+          obj.addEventListener('touchmove',function () {
+              isMove = true;
+          })
+          obj.addEventListener('touchend',function () {
+              if (!isMove && (Date.now() - startTime) < 150){
+                  callback && callback();
+              }
+              isMove = false;
+              startTime = 0;
+          })
+      }
+      tap(element, fn);
+  ```
+
+* fastclick.js 插件
+
+  ```js
+  <script type='application/javascript' src='/path/to/fastclick.js'></script>
+  if ('addEventListener' in document) {
+  	document.addEventListener('DOMContentLoaded', function() {
+  		FastClick.attach(document.body);
+  	}, false);
+  }
+  ```
+
+  
+
+#####  轮播图插件Swiper
+
+1. [Swiper中文网-轮播图幻灯片js插件,H5页面前端开发](https://www.swiper.com.cn/)
+2. 在下载的压缩包中，选demo看类型， 在dist文件夹，引入css和js文件
+3. 将html结构引入。引入css样式， 引入 js代码调用
+
+##### superSlide， touchSlide， isScroll   
+
+##### zy.media.js
+
+移动视频播放插件
+
+#####  移动端开发框架
+
+1. 引入依赖和css，js文件
+2. 引入html结构，修改代码
+3. `Auto.js` 是个基于 `JavaScript` 语言运行在Android平台上的脚本框架
+
+### 本地存储
+
+* 数据存在浏览器中
+
+* sessionStorage 5M localStorage 20M,
+*  只存json字符串
+
+
+
+####  sessionStorage 
+
+window对象 
+
+特点：
+
+* 关闭浏览器窗口就消失
+* 数据可以共享
+* 键值对存储
+
+```js
+sessionStorage.setItem('key', val)
+let item = sessionStorage.getItem('key');
+sessionStorage.removeItem('key');
+ sessionStorage.clear()： 清除所有
+```
+
+######  localStorage 
+
+* 本地化存储，永久有效
+* 同一浏览器数据可以共享
+* 键值对存储
+
+```js
+localStorage .setItem('key', val)
+let item = localStorage.getItem('key');
+localStorage.removeItem('key');
+localStorage.clear()： 清除所有
+```
+
+### jquery
+
+```js
+//入口函数 相当于原生的DOMContentLoaded.
+$(document).ready(function () {
+    $('div').hide();
+})
+$(function () {
+    
+});
+```
+
+##### 顶级对象 JQuery || $
+
+相当于window对象, 本质是伪数组
+
+```js
+$() 
+JQuery()
+```
+
+##### DOM对象与JQuery对象
+
+DOM对象：原生JS对象, 不能相互调用.
+
+* DOM 转换为 JQuery对象 ： $(DOM 对象) 
+* JQuery转换为 DOM 对象 ： $(‘div’)[0],   $(‘div’).get(0)
+
+##### 常用api
+
+隐式迭代，内部自动循环给选择器添加方法。
+
+索引从零开始， 方法从层级关系处理
+
+链式编程
+
+
+
+
+
+###### 选择器
+
+* 基础选择器
+
+  ```js
+  $("css选择器").css(attr: value)
+  ```
+
+* 筛选选择器
+
+  ```js
+  :first:
+  :eq(2):
+  :odd:
+  :even:
+  :last:
+  :checked
+  ```
+
+* 筛选方法
+
+  ```js
+  parent(): 查找亲父元素
+  children(selector): 查找亲子元素 ul>li
+  find(selector):  ul li
+  siblings(selector): 不包含自身的兄弟元素
+  hasClass(name)
+  nextAll( [])
+  preAll( [])
+  eq(selector): :eq(2):
+  
+  ```
+
+##### 方法
+
+```js
+mouseover(function(){})
+show/hide([speed, easing fn])
+css(attr)
+css(attr: value)
+css({
+    width:100px,
+    color:#fff
+})
+add/remove/toggleClass('className'): 不影响原来的类
+
+slideUp/slideDown/silderToggle([speed, easing fn]): 滑动
+
+hover([enterfn, leavefn]): mouseenter mouseleave的简写
+change(): 选中状态
+click()
+
+// 动画排队
+stop(): 必须写在动画的前面，停止上一次动画，阻止多次触发。
+// 淡入淡出
+fadeIn/fadeOut/fadeToggle([speed easing fn]): 淡入淡出
+fadeTo([s]) :修改透明
+// 动画
+animate(params, speed easing fn):自定义动画 params {width:100}
+// 属性值
+prop(attr): 获取元素内置属性
+prop(attr: value): 获取元素内置属性
+attr(attr): 可获取和设置自定义属性
+data(attr:value)存放在元素的缓存中（内存）, 当获取的是h5的属性时data('index‘） 不用谢data-index
+ // 文本方法                                              
+html(text):相当于innerHTML
+text() 相当于innerText
+val() 相当于value
+
 
 ```
 
