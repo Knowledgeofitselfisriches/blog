@@ -1,6 +1,8 @@
 
 
-## JS基础
+## JS基础![img](https://s2.loli.net/2021/12/19/xsqDv1Zzu8L6gXP.jpg)
+
+[State of JS 2020](https://2020.stateofjs.com/zh-Hans/)
 
 [JavaScript 和 HTML DOM 参考手册 (w3school.com.cn)](https://www.w3school.com.cn/jsref/index.asp)
 
@@ -1773,6 +1775,8 @@ test.innerHTML = 'this is gal';
 test.innerText = '</br>this is gal';
 // 获取表单具有value属性的value值 注意button通过innderHTMLx修改
 test.value 
+// 将指定的文本解析为 Element 元素，将结果节点插入到DOM树中的指定位置
+element.insertAdjacentHTML
 ```
 
 ##### 操作元素的属性
@@ -3139,6 +3143,8 @@ localStorage.removeItem('key');
 localStorage.clear()： 清除所有
 ```
 
+## 库
+
 ### jquery
 
 ```js
@@ -3151,7 +3157,7 @@ $(function () {
 });
 ```
 
-##### 顶级对象 JQuery || $
+#### 顶级对象 JQuery || $
 
 相当于window对象, 本质是伪数组
 
@@ -3160,24 +3166,20 @@ $()
 JQuery()
 ```
 
-##### DOM对象与JQuery对象
+#### DOM对象与JQuery对象
 
 DOM对象：原生JS对象, 不能相互调用.
 
 * DOM 转换为 JQuery对象 ： $(DOM 对象) 
 * JQuery转换为 DOM 对象 ： $(‘div’)[0],   $(‘div’).get(0)
 
-##### 常用api
+#### 常用api
 
 隐式迭代，内部自动循环给选择器添加方法。
 
 索引从零开始， 方法从层级关系处理
 
 链式编程
-
-
-
-
 
 ###### 选择器
 
@@ -3202,6 +3204,7 @@ DOM对象：原生JS对象, 不能相互调用.
 
   ```js
   parent(): 查找亲父元素
+  parents(selector) 查找祖先元素
   children(selector): 查找亲子元素 ul>li
   find(selector):  ul li
   siblings(selector): 不包含自身的兄弟元素
@@ -3248,10 +3251,377 @@ html(text):相当于innerHTML
 text() 相当于innerText
 val() 相当于value
 
+toFixed(2): 保留两位小数
+
 
 ```
 
+#####  元素操作
 
+```js
+// DOM对象
+$('div').each(function(index, domElement){})
+$.each(obj, function(){}): 遍历数据处理 obj是对象或者数组
+
+append()
+preppend()： 在子元素的最前面
+after() 在什么的后面
+before()
+remove（）：删除
+empty() 清空子节点 
+html("")清空子节点
+```
+
+##### 尺寸
+
+```js
+width(): 不包含border，padding
+innerWidth(): 包含padding的width
+outerWidth() 包含border，padding的
+outerWidth(true) 包含border，padding， margin的
+```
+
+##### 位置
+
+```js
+offset(): 距离文档的距离{left, top} (只以文档为标准)
+position(): 获取带有定位的父级偏移， 如果没有以文档为准
+scrollTop()： 盒子距离文档顶部的距离
+$('html,body').stop().animate({scrollTop: 0})
+```
+
+##### 事件
+
+* 注册事件
+
+  ```js
+  $('').click(function(){})
+  ```
+
+  
+
+* 事件处理
+
+  ```js
+  $('div').on({
+      click: function () {},
+      mouseenter: function () {},
+  }, )
+  $('ul').on('click change',li, function () {}) 事件委托给ul,处理点击事件
+  // on可以给动态创建的元素绑定事件，click无法处理动态创建的事件
+  off() 解绑on事件
+  $('ul').on('click change',li)解绑事件委托
+  one（）： 只能触发一次的事件 
+  div. click()
+  trigger（‘click’）：自动触发的事件
+  $('').triggerHandler('click') : 不触发元素的默认行其他方法
+  ```
+  
+  
+
+#### 其他
+
+```js
+$.extend(true,tagetObj, obj): true:深拷贝（不会覆盖）、目标， 复制的对象
+
+```
+
+##### JQuery 冲突
+
+* $冲突解决， 使用Jquery（）
+
+* 释放$的控制权，自定义JQuery函数名
+
+  ```js
+  $(function () {
+      let custom = $.noConflict();
+      console.log(custom("div"));
+  })
+  ```
+
+#### JQuery 插件
+
+[dowebok - 做好网站](https://www.dowebok.com/)
+
+[jQuery之家-自由分享jQuery、html5、css3的插件库 (htmleaf.com)](http://www.htmleaf.com/)
+
+
+
+##### 图片懒加载
+
+EasyLazyLoad.js, 引入的js文件，必须在所有图片的下面
+
+todo:图片懒加载
+
+##### 瀑布流
+
+##### 全屏滚动
+
+fullpage.js.  github
+
+[jQuery全屏滚动插件fullPage.js_dowebok](https://www.dowebok.com/77.html)
+
+### BootStrap
+
+[2021最新完整版Bootstrap教程（最给力的前端框架）bootstrap框架讲解-快速上手,最适合后端开发人员的bootstrap保姆级使用教程_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1TU4y1p7zU/?spm_id_from=333.788.recommend_more_video.4)
+
+### 数据可视化
+
+都基于：
+
+Canvas：位图的图像 只能缩放显示 适合像素处理，动态渲染和大数据量绘制
+
+ SVG ： 基于矢量的 处理图形大小的改变
+
+* D3.js： 评价最好的前端库，定制化，学习难度大， SVG 是基于 DOM 操作的，**支持更精确的用户交互**，
+* Echart.js ： 百度开源库   数据量多 基于canvas的  不灵活
+* Highcharts.js    国外
+* AntV
+* threejs  WebGL
+
+#### Echart.js
+
+##### 基本使用
+
+1. 引入js
+2. 给出DOM容器
+3. 初始化echart对象
+4. 指定配置和数据（根据options， 设定不同的图）
+5. 设置echart
+
+```js
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <!--以ie浏览器的最高版本内核渲染页面-->
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="js/echarts.min.js"></script>
+    <style>
+        // 必须给定大小
+        .box {
+            width: 400px;
+            height: 600px;
+            background-color: yellow;
+        }
+    </style>
+    <title> EChart 数据可视化</title>
+</head>
+<body>
+        // 准备容器
+ <div class="box"></div>
+</body>
+<script>
+    // 初始化
+    let chart = echarts.init(document.querySelector('.box'));
+    // 配置
+    let options = {
+        title: {
+            text: 'ECharts 入门示例'
+        },
+        tooltip: {},
+        xAxis: {
+            data: ['衬衫', '羊毛衫', '雪纺衫', '裤子', '高跟鞋', '袜子']
+        },
+        yAxis: {},
+        series: [
+            {
+                name: '销量',
+                type: 'bar',
+                data: [5, 20, 36, 10, 10, 20]
+            }
+        ]
+    }
+    // 应用
+    chart.setOption(options);
+</script> 
+</html>
+```
+
+##### 配置
+
+* title:表的标题
+
+* toolttip: 提示框 数据标示
+
+* legend: 图例组件 
+
+* toolbox： 工具栏 下载为图片
+
+* grid: 网格
+
+* XAxis, YAxis,： 坐标轴
+
+* color 颜色设置
+
+* series ： 数据对象组成的数组
+
+  ```js
+  name:决定legend 和 tooltip
+  type:图标类型
+  stack: 数据堆叠， 去掉属性，或者改写属性
+  data: [1122， {}， 23] // 数据点, 可以是数值，也可以设置柱对象来控制**单独**柱状图的样式 
+  ```
+
+##### 适配
+
+设计稿是1920px
+
+PC端适配： 宽度在 1024~1920之间页面元素宽高自适应
+
+flexible.js 把屏幕分为 24 等份
+
+cssrem 插件的基准值是 80px
+
+插件-配置按钮—配置扩展设置–Root Font Size 里面 设置。
+
+设计稿 1920px
+
+1024 ~ 1920 等比例缩放
+
+##### 边框图片
+
+盒子大小不一，边框样式相同。可以使用css3的border-image.
+
+**要求** 使用九宫格形式 代码切图切四个角， 需要先指定border
+
+```html
+<div class="panel">
+    <div class="inner"></div>
+</div>
+```
+
+```css
+.panel {
+    position: relative;
+    border-image-source: url("../images/logo.png");
+    border-image-slice: 上右下左; 不加单位，直接使用px数值 相当于border的宽度控制了
+    border-image-width: 30px;默认border的宽度，但不影响box的内容
+    border-image-repeat: round;  边框是否铺满
+}
+采用绝对定位将inner 拉伸压在border上， 将父容器完全覆盖 让内容在父盒子内显示
+.inner {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    bottom: 40px;
+    left: 60px;
+    padding:2px 3px;-
+}
+```
+
+##### 字体图标
+
+* 类名调用
+  1. 引入css 和 fonts
+  2. class = “name”
+
+##### 图表缩放
+
+```js
+ window.addEventListener('resize',function () {
+        chart.resize();
+ })
+```
+
+##### 第三方模块
+
+echarts Gallery  [Make A Pie](https://www.makeapie.com/explore.html)
+
+**注意** ： 地理地图，不是图片，而是点面构成的。 必须使用china.js
+
+## 面向对象
+
+### 类和对象ES6
+
+```js
+class Sun {
+    // new 对象时自动调用 返回对象
+     constructor(uname) {
+         this.uname = uname;
+     }
+     // 公有方法
+     sing（） {
+         
+     }
+ }
+let john = new Sun('bitch');
+console.log(john.uname)
+```
+
+#### 类的继承
+
+```js
+    class Sun {
+        constructor(uname) {
+            this.uname = uname;
+        }
+    }
+    class Star extends Sun {
+        constructor(uname) {
+            super(uname);
+            this.btn =  document.querySelector('button');
+            this.btn.onclick = this.sing;
+        }
+        sing() {
+            console.log(this.name)
+        }
+    }
+    let john = new Sun('bitch');
+    console.log(john.uname)
+```
+
+* 子类可以通过super()调用父类的构造方法
+* 子类可以通过super.say()调用父类的普通方法
+* 子类调用方法先查自己的方，再查父类的。就近原则
+
+**注意**   
+
+* 如果要显示调用super() 执行父构造器后， 才能调用this。
+* ES6中类没有变量提升，必须先定义在实例对象
+* 公有的属性和方法一定要加this调用
+
+#### this的指向问题
+
+* constructor 中的this 指向 实例对象
+
+* 类公有方法的this， 指向调用者  实例对象。
+* 上诉的sing 方法中的this， 指向了触发事件的btn。指向方法的调用者， 可以使用that 全局保存this 注意释放
+
+```js
+    class Sun {
+        constructor(uname) {
+            this.uname = uname;
+        }
+    }
+    let that;
+    class Star extends Sun {
+        constructor(uname,age) {
+            super(uname);
+            this.age = age
+            this.btn =  document.querySelector('input');
+            this.btn.onclick = this.sing;
+            that = this;
+        }
+        sing() {
+            console.log(this.uname)
+            console.log(that.age)
+        }
+    }
+    let john = new Star('bitch',10);
+    john.sing()
+	that = null;
+```
+
+
+
+## ES6
+
+###  新特性
+
+###              
 
 ## 技巧
 
@@ -3271,7 +3641,23 @@ val() 相当于value
 ```js
 ( function () {}) ();
 ( function () {}() );
+li.click() : 自动触发点击事件
+input.select(): 自动选中文字
 ```
+
+### html双击禁止选中文字
+
+```js
+window.getSelection ? window.getSelection().removeAllRanges() : document.selection.empty();
+```
+
+#### 复合就执行
+
+```js
+ X && X()
+```
+
+
 
 ## **专栏**
 
@@ -3315,15 +3701,78 @@ todo: codepen
 
 todo: flexible.js代码
 
+todo: 响应式瀑布流文件
+
+todo:图片懒加载
+
+todo:**《前端架构师课》**
+
+todo: [正则表达式可视化-Visual Regexp：在线测试、学习、构建正则表达式 (wangwl.net)](https://wangwl.net/static/projects/visualRegex/#prefix=Y&source=Yemail)
+
+* headless ui
+
+* place-items：center： 垂直水平居中
+
+* clip-path：polygon（点）
+* clip-path：circle（）  圆形 shape-outside：circle 改变占位形状
+
+* background：url：picsum.photos/200(定义宽，随机给图片)
+
 ### 查找属性，类型信息
 
 * typeof( Xxx): 查看Xxx是基本数据类型
 * instanceOf:  查看Xxx是不是某个构造函数的实例
 * console.dir(): 查看属性
 
+##  Dev Tools:
+
+* 6个变量 $ 0-4: 0代表选中的元素， 1代表上次选中的元素， $_:代表上次控制台计算的结果
+* 打开命令面板 ctrl  shift p : 
+  1. 设置外观，Theme
+  2. 截屏 screenshot(框选，全屏， 节点)
+  3. dock
+
+### css 调试
+
+* ctrl + f: 可以字符串搜索，可以选择器
+* console面板输入 inspect(document.getElementByID())
+
+​	
+
+### console
+
+* 6个变量 $ 0-4: 0代表选中的元素， 1代表上次选中的元素，2上上次， $_:代表上次控制台计算的结果
+
+* log(‘%c ’ “css样式”)
+
+* console.error, warn, table.clear,time,assert trace
+
+  ```js
+  console.group('test start')
+  console.log()
+  console.log()
+  console.groupEnd('test end')
+  
+  console.time()
+  for i<100 {}
+  console.timeEnd()
+  console.table() ：将数组以表格的方式显示，可排序
+  
+  ```
+
+### Source
+
+在需要调试的代码部分，写入 debugger;
+
+ctrl shift p  enable code folding: 折叠无关代码
+
+
+
+
+
 ## 技术栈
 
-ES6,node.js. react，vite+vue3+ts，rust / wasm,  Blazor,pnpm，ahooks，Tailwind CSS
+ES6,node.js. react，vite+vue3+ts，rust / wasm,  Blazor,pnpm，ahooks，Tailwind CSS， Jest
 
 1. Interface Types Proposal 实施
 2. Web IDL到Web Assembly的映射
@@ -3698,3 +4147,20 @@ ES6,node.js. react，vite+vue3+ts，rust / wasm,  Blazor,pnpm，ahooks，Tailwin
 一本讲JavaScript的硬书，以JavaScript这门语言为栗子，讲述编程语言的特性（动态语言、函数式编程、面向对象编程等等）。作者周爱民老师是前支付宝架构师，现[豌豆荚](https://www.zhihu.com/search?q=豌豆荚&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A157022092})架构师。
 
 **《高性能JavaScript》**, **《Node.js开发指南》**,**《深入浅出Node.js》**，**《Web性能权威指南》**《深入理解JavaScript特性》，《Java编程思想》。**《ES6标准入门（第三版）》**
+
+## 面试
+
+
+
+* ```js
+  function a() {
+      return
+      {
+          "OK"
+      }
+  }
+  a() undefined
+  retrun 后省略了; 直接结束函数了返回了
+  ```
+
+* 
