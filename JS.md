@@ -1,6 +1,8 @@
 
 
-## JS基础![img](https://s2.loli.net/2021/12/19/xsqDv1Zzu8L6gXP.jpg)
+## JS基础
+
+<img src="https://s2.loli.net/2021/12/19/xsqDv1Zzu8L6gXP.jpg" alt="img" style="zoom:50%;" />
 
 [State of JS 2020](https://2020.stateofjs.com/zh-Hans/)
 
@@ -747,6 +749,8 @@ Symbol(Symbol.iterator): ƒ values()
 ```
 
 ##### 作用域
+
+for if 无法创建作用域
 
 限定变量的作用范围。
 
@@ -3586,9 +3590,9 @@ console.log(john.uname)
 #### this的指向问题
 
 * constructor 中的this 指向 实例对象
-
 * 类公有方法的this， 指向调用者  实例对象。
 * 上诉的sing 方法中的this， 指向了触发事件的btn。指向方法的调用者， 可以使用that 全局保存this 注意释放
+* 实例化对象调用原型对象prototype中的方法，this指向实例化对象
 
 ```js
     class Sun {
@@ -3602,7 +3606,7 @@ console.log(john.uname)
             super(uname);
             this.age = age
             this.btn =  document.querySelector('input');
-            this.btn.onclick = this.sing;
+            this.btn.onclick = this.sing; 
             that = this;
         }
         sing() {
@@ -3613,7 +3617,461 @@ console.log(john.uname)
     let john = new Star('bitch',10);
     john.sing()
 	that = null;
+
+ Son.prototype.sing = function () {
+        console.log(`this is ${this.name}`)
+ }
+let john = new Son('john', 10);
+john.sing();
 ```
+
+### 构造函数和原型
+
+```js
+function Son(name,age) {
+    this.name = name;
+    this.age = age;
+    this.sing = function () {
+        console.log('this is sing')
+    }
+}
+Son.gender = 'boy'
+let c = new Son('john', 10);
+```
+
+new 调用方法时：
+
+1. new 先创建一个空对象
+2. 将this指向 空对象
+3. 为对象添加属性和方法
+4. 返回新对象
+
+#### 实例和静态
+
+实例成员：是通过构造函数内部的this添加的，只能通过实例化对象调用
+
+静态成员：直接在构造函数上添加的属性，只能通过构造函数访问 Son.gender = 'boy'
+
+#### 构造函数问题
+
+如果构造函数内部有添加**方法**， 在new Function时，会多次创建该方法存入堆中.浪费时间与空间
+
+```js
+ this.sing = function () {
+     console.log('this is sing')
+ }
+```
+
+#### 构造函数原型 prototype
+
+构造函数通过原型分配的函数 是所有对象共享的
+
+每一个构造函数都有一个prototype属性，指向另一个对象。该对象的所有属性和方法，都会被构造函数拥有。
+
+```js
+    function Son(name,age) {
+        this.name = name;
+        this.age = age;
+    }
+    Son.prototype.sing = function () {
+        console.log(`this is ${this.name}`)
+    }
+    let john = new Son('john', 10);
+    john.sing();
+```
+
+#### __proto__
+
+每一个对象都有`__proto__`属性(对象的原型)，它指向了构造函数的prototype对象 原型对象.
+
+`john.__proto__` === `Star.prototype`
+
+方法查找原则：
+
+1. 实例化对象是否有sing
+2. 没有则查找`__proto__` 去 prototype 查找sing
+
+#### constructor
+
+`__proto__` 和 prototype 中都有一个 constructor（构造函数）属性：指向构造函数本身
+
+通知对象是哪个构造函数创建的
+
+```js
+Son.prototype.constructor = Son
+```
+
+如果原型有较多的公有方法则使用对象赋值
+
+```js
+Son.prototype = {
+    sing: function () {},
+    talk:function (){}，
+    constructor: Son
+}
+```
+
+该方式覆盖了原对象，没了constructor属性。需要手动指定
+
+
+
+#### 原型链
+
+<img src="https://s2.loli.net/2021/12/20/FZ8uhcOKdCzI54s.png" alt="image-20211220204932572" style="zoom:50%;" />
+
+当我们「读取」 obj.toString 时，JS 引擎会做下面的事情：
+
+\1. 看看 obj 对象本身有没有 toString 属性。没有就走到下一步。
+
+\2. 看看 obj.__proto__ 对象有没有 toString 属性，发现 obj.__proto__ 有 toString 属性，于是找到了
+
+所以 obj.toString 实际上就是第 2 步中找到的 obj.__proto__.toString。
+
+可以想象，
+
+\3. 如果 obj.__proto__ 没有，那么浏览器会继续查看 obj.__proto__.__proto__
+
+\4. 如果 obj.__proto__.__proto__ 也没有，那么浏览器会继续查看 obj.__proto__.__proto__.proto__
+
+\5. 直到找到 toString 或者 __proto__ 为 null。
+
+#### 扩展内置对象
+
+```js
+Array.prototype.sum = function(){}
+```
+
+对于内置对象，无法采用 `Array.prototype = {}` 模式覆盖，只能追加
+
+### 继承
+
+
+
+#### 组合继承
+
+在没有extends之前，用构造函数 + 原型对象模拟实现继承
+
+```js
+Son.prototype = new Father()
+Son.prototype.constructor = Son
+```
+
+### ES5
+
+#### 数组方法
+
+```js
+arr.forEach(function(index, item, arr) {})
+```
+
+```js
+// 过滤， 筛选大于20的值组成新数组，
+arr.filter(function(currentValue, index,arr){
+    return currentValue >20
+})
+```
+
+```js
+// 检测数组中是否有满足条件的元素，返回bool,(只查找一次)
+arr.Some(function(currentValue, index,arr){
+    return currentValue & 1 === 0
+})
+```
+
+```js
+let newArr= arr.map(function(currentValue, index,arr){
+    return  currentValue + '0'
+})
+```
+
+```js
+// every()方法，针对数组中的每一个元素进行比对，只要有一个元素比对结果为false则返回false，
+arr.every(function(currentValue, index,arr){
+    return currentValue & 1 === 0
+})
+```
+
+#### string 方法
+
+```js
+let newStr = str.trim() //去除两边的空格
+```
+
+#### Object方法
+
+```js
+ let keyArr = Object.keys()//对象的属性名组成的数组
+```
+
+```js
+// 可以添加 或 修改值
+Object.defineProperty(person,'gender', 
+                           {value:'boy',
+                            writable:false, //不可修改
+                            enumerable:false, // 是否可被枚举或遍历 默认false
+                            configurable:false, //是否可删除或 是否设置好后再次修改特性 delete person.gender 无效 
+                           })
+```
+
+### 高阶函数
+
+接收函数作为参数或函数作为返回值
+
+```js
+let fn = new Function('a', 'b', 'console.log(a + b)')
+```
+
+#### this 指向
+
+1. 普通函数      this 指向 window
+2. 对象的方法  this 指向 obj
+3. 构造函数      this 指向 实例对象， 原型对象的方法调用也指向 实例对象
+4. 绑定事件函数  指向绑定事件的调用者
+5. 定时器函数 指向window
+6. 立即执行函数  window
+
+#### call()、apply()、bind() 
+
+都是为了改变某个函数运行时的 context 即上下文而存在的，换句话说，就是为了改变函数体内部 this 的指向。因为 JavaScript 的函数存在「定义时上下文」和「运行时上下文」以及「上下文是可以改变的」这样的概念。call和apply是为了动态改变this而出现的，当一个object没有某个方法，但是其他的有，我们可以借助call或apply用其它对象的方法来操作
+
+[浅析Js中call,apply,bind - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/183162379)
+
+- **相同点：**
+
+三者都是用来改变函数的上下文，也就是`this`指向的。
+
+- **不同点：**
+
+`fn.call`：立即调用，返回函数执行结果，`this`指向第一个参数，后面可有多个参数，并且这些都是`fn`函数的参数。】
+
+```js
+//  fn.call(this参数,形参1，形参2...) 没有指定this参数, 则会被指向window
+ function Father (name,age){
+        this.name = name
+        this.age = age
+    }
+    function Son(name,age) {
+        // 将 Son的实例给了 this传入 Father 将Father的this赋值为Son的实例
+        Father.call(this, name, age)
+    }
+    let son = new Son()
+```
+
+`fn.apply`：立即调用，返回函数的执行结果，`this`指向第一个参数，第二个参数是个数组，这个数组里内容是`fn`函数的参数。
+
+```text
+fn.apply(this参数，参数的数组)
+```
+
+`fn.bind`： 不会立即调用，改变this的指向，返回一个由指定this值和初始化参数改造的原函数拷贝。
+
+```js
+// const newFn=fn.bind(this参数，函数参数1，函数参数2...)
+
+    let o = {}
+    function fn() {
+        console.log(this);
+    }
+    let f = fn.bind(o);
+    f()
+// x需求点击后禁用，3s后开启
+let btn = document.querySelector('.btn');
+   
+    btn.addEventListener('click',function () {
+            this.disabled = true;
+            let that = this;
+            setTimeout(function () {
+                that.disabled = false;
+            },3000)
+    })
+
+let btn = document.querySelector('.btn');
+
+btn.addEventListener('click',fn)
+function fn() {
+    this.disabled = true;
+    setTimeout(function () {
+        this.disabled = false;
+    }.bind(this), 3000) //this 指向btn, 由 setTimeout 自动调用
+}
+```
+
+#### 严格模式
+
+struct mode ES5限定
+
+1. 消除不合理，不严谨的行为
+2. 消除代码安全问题
+3. 提高编译效率
+4. 禁用未来版本定义的语法，关键字等
+
+##### 为脚本开启严格模式
+
+```js
+// 方法一
+<script>
+    'use strict';
+</script>
+
+// 方法二
+<script>
+    (function () {
+        'use strict';
+    })();
+</script>
+```
+
+##### 为函数开启严格模式
+
+```js
+function f() {
+    'use strict';
+}
+```
+
+####  变化
+
+1. 变量必须先声明再使用，
+2. 不能随意删除以声明的变量
+3. 严格模式下 全局作用域中函数中的this指向undefined
+4.  以前的构造函数可以当普通函数调用，this指向window。严格模式使用this为undefined
+5. 通过new 构造函数 、事件，this还是指向调用者
+6. 定时器还是指向window
+7. 不允许函数中的参数同名 function   f（a,a ）(a + a )     f(1,2) = 4 
+8. 不允许在非函数中代码块（for ,if）中创建函数
+
+#### 闭包
+
+一个函数 访问另一个函数作用域中的变量的函数叫闭包
+
+```js
+function f() {
+   let n = 10;
+   function fn() {
+       console.log(n)
+   }
+   return fn;
+}
+// f为闭包函数
+let fun = f()
+fun(); // 在全局作用域 访问局部作用内的变量
+```
+
+闭包延伸了变量的作用范围
+
+异步任务：
+
+1. 定时器，事件，ajax 回调函数
+
+```js
+let lis = document.querySelectorAll('li');
+for (let i = 0; i < lis.length; i++) {
+    // for是同步任务， click是异步任务 每次执行i都是 lis.length - 1
+    lis[i].index = i;
+    lis[i].addEventListener('click', function () {
+        console.log(this.index)
+    })
+}
+// 循环注册事件
+for (let i = 0; i < lis.length; i++) {
+    (function (i) {
+        lis[i].addEventListener('click', function () {
+            console.log(i)
+        })
+    })(i);
+}
+// 循环处理定时器任务
+for (let i = 0; i < lis.length; i++) {
+        // for是同步任务， click是异步任务 每次执行i都是 lis.length - 1
+        (function (i) {
+            setTimeout(function () {
+                console.log(lis[i].innerHTML)
+            },3000)
+        })(i);
+    }
+```
+
+```js
+// 打车
+let car = (function () {
+    let basic = 13;
+    let total = 0;
+    return {
+        price: function (n) {
+            if (n < 3){
+                total = basic;
+            }else {
+                total = basic + (n -3 ) *6;
+            }
+            return total;
+        },
+        other: function () {
+            
+        }
+    }
+})();
+car.price(6)
+car.other()
+```
+
+##### 递归
+
+```js
+function f(n) {
+    if (n === 1){ return 1;}
+    return n * f(n -1);
+}
+
+function f(n) {
+    if (n === 1 || n ===2 ){ return 1;}
+    return f(n -1 ) + f(n -2);
+}
+// 递归获取对象
+  function f(json, id) {
+       let obj = null;
+       json.forEach(function (item) {
+           if(id === item.id){
+               obj = item;
+               return item;
+           }else if(item.goods && item.goods.length > 0 ){
+               obj = f(item.goods, id)
+           }
+       })
+       return obj
+   }
+
+```
+
+##### 浅拷贝
+
+```js
+// ES6 浅拷贝
+Object.assign(o, Obj)
+// for
+
+```
+
+##### 深拷贝
+
+```js
+function deepCopy(newObj, oldObj) {
+    for (const key in oldObj) {
+        let item = oldObj[key];
+        if(item instanceof Array){
+            newObj[key] = [];
+            deepCopy(newObj[key], item)
+        }else if (item instanceof Object){
+            newObj[key] = {};
+            deepCopy(newObj[key], item)
+        }else {
+            newObj[key] = item;
+        }
+
+    }
+}
+```
+
+### 正则表达式
 
 
 
@@ -3772,7 +4230,7 @@ ctrl shift p  enable code folding: 折叠无关代码
 
 ## 技术栈
 
-ES6,node.js. react，vite+vue3+ts，rust / wasm,  Blazor,pnpm，ahooks，Tailwind CSS， Jest
+ES6,node.js. react，vite+vue3+ts，rust / wasm,  Blazor,pnpm，ahooks，Tailwind CSS， Jest ， auto.js(安卓 [Auto.js从入门到精通_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1pQ4y1R7Us?p=3&spm_id_from=pageDriver))
 
 1. Interface Types Proposal 实施
 2. Web IDL到Web Assembly的映射
@@ -4163,4 +4621,6 @@ ES6,node.js. react，vite+vue3+ts，rust / wasm,  Blazor,pnpm，ahooks，Tailwin
   retrun 后省略了; 直接结束函数了返回了
   ```
 
-* 
+* [15个手写JS，巩固你的JS基础（面试高频） - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/386894552)
+
+* JS 闭包 异步 原型链作用域
