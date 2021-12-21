@@ -8,6 +8,8 @@
 
 [JavaScript 和 HTML DOM 参考手册 (w3school.com.cn)](https://www.w3school.com.cn/jsref/index.asp)
 
+[Can I use... Support tables for HTML5, CSS3, etc](https://caniuse.com/)
+
 脚本语言：运行过程中由js引擎逐行解释执行。
 
 编译： 将源码编译为中间码，最后解释执行
@@ -857,7 +859,7 @@ js执行：会先 预解析， 在执行代码
 
   **函数是一等公民，优先编译函数**
 
-  ```js1
+  ```js
   console.log(a); //function a(){}
   var a = 10;
   function a(){
@@ -870,6 +872,11 @@ js执行：会先 预解析， 在执行代码
   console.log(a);
   a = 10;
   console.log(a);
+  
+  function a() {}
+  var a;
+  console.log(typeof a) //function a(){}
+  
   ```
 
   
@@ -4071,15 +4078,625 @@ function deepCopy(newObj, oldObj) {
 }
 ```
 
-### 正则表达式
+## 正则表达式
+
+用于字符串的 匹配 替换 和 提取。JS中以对象为存在，正则里面没有引号
+
+创建对象
+
+```js
+//含有213子串
+let reg = new RegExp(/213/)
+let reg = /123/
+
+```
+
+### 方法
+
+test() 是否匹配要求
+
+```js
+reg.test('123')
+```
+
+replace() 替换
+
+```js
+reg.replace(/andy/g 'andy') : // 全局搜索 替换字符串
+```
+
+提取
+
+```js
+var reg = /(\d{4})-\d{1,2}-\d{1,2}/;
+if (reg.test(dateStr)) {
+  console.log(RegExp.$1);
+}
+```
 
 
+
+### 正则组成
+
+#### 特殊字符
+
+#### 边界符号
+
+^:   以什么开头
+
+$：以什么结尾
+
+#### 字符类
+
+[] 有一系列可供选择
+
+```js
+/[abc]/ 出现任何一个就行
+/[a-zA-Z0-9_-]/
+/[^a-z]/ 取反 不能包含a-z
+```
+
+#### 量词符
+
+\* :出现0次货多次
+
++：至少一次
+
+？：出现0或1次
+
+{3} {3， } {3. 16}
+
+```js
+/^[a-zA-Z0-9_-]{3,16}$/
+```
+
+#### 预定义类
+
+```js
+/\d/ 0-9
+/\D/ [^0-9]
+/\w/ 字母数字下划线
+/\s/ 匹配空格 换行 制表符
+
+let reg = /^\d{3,4}-{\d}{7,8}$/
+```
+
+#### 参数
+
+* g 全局搜索
+* i 忽略大小写
+* 
 
 ## ES6
 
+2015以后的标准。
+
 ###  新特性
 
-###              
+####  关键字
+
+LET:
+
+* let 声明的变量只在块级作用域（ {} ）有效，防止循坏的变量成为全局变量。
+
+* let 不存在变量提升 消除未定义就使用，必须先声明再使用。var 会给初始值，let会报错
+
+* 暂时死区  let 会锁死自己的块级作用域 {} for {}会开辟多个  if()
+
+  ```js
+  var num = 10
+  if(true){
+      console.log(num); // t ReferenceError: Cannot access 'num' before initialization
+      let num = 20;
+  }
+  
+  var num = 10
+  console.log(num); // Identifier 'num' has already been declared
+  let num = 20;
+  
+  ```
+
+const:
+
+常量， 
+
+* 具有块级作用域
+* 声明必须赋值，否则报错
+* 复制后的常量，给与的内存地址不能变化
+
+| var        | let            | const          |
+| ---------- | -------------- | -------------- |
+| 函数作用域 | 块级作用域     | 块级作用域     |
+| 变量提升   | 不存在变量提升 | 不存在变量提升 |
+| 值可更改   | 值可更改       | 值不可更改     |
+
+####  解构赋值
+
+数组解构
+
+```js
+let [a,g,c] = [1,2,3]
+let [foo] = [] // 结构失败，赋值为undefined
+let [bar,foo] = [1]; //bar =1 foo = undefined
+let [bar,foo] = [1,2,3]// bar =1 foo=2 
+```
+
+对象解构
+
+```js
+let person = {name：'john',age:10, gender:'boy'}
+let {uname，age，gender } = person; // 必须保证变量名与属性名一致
+console.log(uname) // undefined
+console.log(age) //10
+console.log(gender) //'boy'
+// 起别名
+let {name:uname，age，gender } = person;
+console.log(uname) // 'john'
+```
+
+#### 箭头函数
+
+简化函数定义
+
+```js
+const fn = (a,b) => {
+    return a + b;
+}
+const fn = (a,b) => a + b;
+```
+
+箭头函数不绑定this， 如果使用则this指向函数定义位置的上下文this
+
+```js
+const obj = {name:'lisi'};
+
+function fn(){
+    console.log(this);  //  obj
+    return () => console.log(this); //  箭头函数不存在this obj
+}
+const ref = fn.call(obj);
+ref()
+
+var obj = {age:20,
+           say:()=> console.log(this.age)；// 不能产生作用域， this指向window
+          }
+obj.say(); // undefined
+```
+
+#### 剩余参数
+
+箭头函数中无法使用arguments, 必须使用剩余参数 ...args
+
+```js
+( ...args) => {
+    let total = 0;
+    args.forEach( item =>  total += item;)
+    return total;
+}
+
+[s1,...s2] = 'a-2-3'.split('-')
+```
+
+#### 扩展运算符
+
+将数组拆分为逗号分割的参数序列
+
+```js
+let arr = [1,2,3]
+...ary // 1,2,3 拆分结构
+console.log(...ary)// 逗号为log的参数分割
+
+arr1 = [];
+arr2 = [];
+let arr3 = [...arr1, ...arr2]
+
+arr1.push(...arr2)
+
+// 将伪数组转换为数组
+let divs = document.querySelectorAll('li')
+divs = [...divs]
+```
+
+### ES6 内置对象扩展
+
+#### Array
+
+将类数组 和 可遍历对象转为真正的数组
+
+##### 构造函数方法Array.from()
+
+```js
+let arrLike = {'0':'a', '1':'b', length:2}
+let arr2 = Array.from(arrLike, item =>  item *2);
+```
+
+##### find()
+
+```js
+arr.find(  item => item.id === 2 )
+```
+
+#####  findIndex()； 只查找第一个
+
+```js
+arr.findIndex( item => item >12)
+```
+
+##### includes():查数组是否包含某个值
+
+```js
+[1,2,3].includes(2)
+```
+
+#### String
+
+##### 模板字符串
+
+```js
+let name = 'john'
+`${name}
+```
+
+##### startsWiht()/ endsWith()
+
+##### repeat( n )
+
+```js
+let newstr = str.repeat(3)
+```
+
+#### Set
+
+成员唯一，多用于存储不重复的值
+
+```js
+const set = new Set()
+console.log(set.size)
+// 数组去重
+let arrSet = new Set([1,2,3,2])
+let arr = [...arrSet]
+```
+
+##### 实例方法
+
+```js
+add(ele): 返回set对象
+delete(ele)
+has()
+clear()
+```
+
+```js
+forEach()
+```
+
+## 前后分离
+
+**浏览器原理**：
+
+###  Http协议
+
+#### 请求方式
+
+* get
+* Post
+
+#### 状态码
+
+
+
+### AJAX
+
+网页请求数据需要使用 `XMLHttpRequest`对象,
+
+ajax 不要在刷新网页来与服务器通信，允许事件更新部分页面
+
+* ajax没有历史信息和回退
+* 不能跨域
+* seo不友好
+
+#### 准备
+
+在项目根目录下，安装epress框架
+
+```
+ npm init --yes
+ npm i -g express
+ 添加NODE_PATH
+ node i -g nodemon // 自动重启server
+ nodemon server.js
+ //  无法加载文件 C:\Users\cwq\AppData\Roaming\npm\nodemon.ps1，因为在此系统上禁止运行脚本
+ npx nodemon .\server.js   
+```
+
+进入.\server.js 文件夹
+
+```js
+const express = require('express');
+const app = express();
+app.get('/server', (request,response)=>{
+    response.setHeader('Access-Control-Allow-origin', '*');
+    response.send('Ajax get is successful')
+});
+// 接收所有请求
+app.all('/server', (request,response)=>{
+    response.setHeader('Access-Control-Allow-origin', '*');
+    // 允许自定义 会发送options请求 确认权限
+    response.setHeader('Access-Control-Allow-Headers', '*');
+    response.send('Ajax post is successful')
+});
+app.listen(8000, ()=>{
+    console.log('this server is ready , port is 8000')
+})
+```
+
+启动服务
+
+```js
+ node .\server.js
+```
+
+发送请求
+
+```js
+    const  btn = document.getElementById('btn');
+
+    btn.addEventListener('click',function () {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'http://127.0.0.1:8000/server')
+            xhr.setRequestHeader('content-type','text/html')
+            // 配合后端的 自定义请求头
+            xhr.setRequestHeader('name','jane')
+            xhr.send();
+
+            xhr.onreadystatechange = function () {
+                if(4 === xhr.readyState && 200 <= xhr.status && 300 >= xhr.status){
+                    console.log(xhr.status)
+                    console.log(xhr.statusText)
+                    console.log(xhr.getAllResponseHeaders())
+                    console.log(xhr.response)
+                }
+            }
+    })
+```
+
+##### IE 缓存
+
+ie 缓存ajax 结果，不再使用ajax的最新结果，火狐无法正常触发load 使用pageshow 
+
+解决方式  http://127.0.0.1:8000/server ?t=+ Date.now()
+
+#### 超时设置
+
+```js
+btn.addEventListener('click',function () {
+        const xhr = new XMLHttpRequest();
+        x = xhr
+        // 超时
+        xhr.timeout = 2000
+        xhr.ontimeout = () => alert('网络异常')
+        // 断网
+        xhr.onerror = () => alert('网络异常')
+        xhr.open('GET', 'http://127.0.0.1:8000/setTime')
+        xhr.send();
+
+        xhr.onreadystatechange = function () {
+            if(4 === xhr.readyState && 200 <= xhr.status && 300 >= xhr.status){
+                result.innerHTML = xhr.response
+            }
+        }
+})
+```
+
+#### 取消请求
+
+```js
+const  btn = document.getElementById('btn');
+const  result = document.getElementById('result');
+const  cancel = document.getElementById('cancel');
+let x = null;
+
+btn.addEventListener('click',function () {
+        const xhr = new XMLHttpRequest();
+        x = xhr
+        xhr.open('GET', 'http://127.0.0.1:8000/setTime')
+        xhr.send();
+
+        xhr.onreadystatechange = function () {
+            if(4 === xhr.readyState && 200 <= xhr.status && 300 >= xhr.status){
+                result.innerHTML = xhr.response
+            }
+        }
+})
+cancel.addEventListener('click', ()=>{
+    // 取消ajax请求
+    x && x.abort();
+})
+```
+
+#### 重复请求
+
+```js
+const  btn = document.getElementById('btn');
+let x = null;
+let isSending = false;
+btn.addEventListener('click',function () {
+        // 取消请求
+        if (isSending) x.abort();
+        const xhr = new XMLHttpRequest();
+        x = xhr
+        xhr.open('GET', 'http://127.0.0.1:8000/setTime')
+        xhr.send();
+        isSending = true;
+        xhr.onreadystatechange = function () {
+            if(4 === xhr.readyState){
+                isSending = false;
+            }
+        }
+})
+```
+
+### JQuery
+
+可使用cdn引入jquery
+
+```js
+//跨源请求不带cookie
+<link crossorigin="anonymous" rel="stylesheet" href="" >
+$('#btn').click(()=>{
+    $.get('http://127.0.0.1:8000/jquery',{name:'job'}, data => console.log(data))
+})
+$('#cancel').click(()=>{ 
+      // url data fn type
+    $.post('http://127.0.0.1:8000/server',{name:'job'}, data => console.log(data), 'json')
+})
+
+
+app.all('/server', (request,response)=>{
+    response.setHeader('Access-Control-Allow-origin', '*');
+    let person = {name:'job',age:18}
+    response.send(JSON.stringify(person))
+});
+```
+
+### Axios
+
+todo： [尚硅谷Web前端axios入门与源码解析_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1wr4y1K7tq?spm_id_from=333.788.b_636f6d6d656e74.26)
+
+发送ajax 组件
+
+```js
+app.get('/axios', (request,response)=>{
+    response.send('jquery ajax  ')
+});
+const  btn = document.getElementById('btn');
+
+axios.defaults.baseURL = 'http://127.0.0.1:8000'
+
+btn.addEventListener('click',()=> {
+    axios.post('/axios',
+               {
+        user:'admin',
+        pass:'admin'
+    },{
+        params: {
+            id:100,
+            vip:7
+        },
+        headers: {
+            Name:'job',
+            Age:10
+        },
+
+    }).then(value => console.log(value));
+})
+
+// 通用发送
+axios(
+           {
+               url:'/axios',
+               method:'GET',
+               params: {
+                    id:100,
+                    vip:7
+               },
+               headers: {
+                    a:100,
+                   b:200
+               },
+               data: {
+                   user:'admin',
+                   pass:'admin'
+               }
+           }
+
+       ).then(response => console.log(response.status));
+// fetch 发送
+  fetch(url, {
+            method:'GET',
+            headers: {},
+            body: 'user=admin&pass=admin',
+        }).then(response => console.log(response.json));
+```
+
+解决跨域问题 npm i cors --save
+
+```js
+const express = require('express');
+//
+const cors=require('cors');
+const app = express();
+//
+app.use(cors());
+app.get('/axios', (request,response)=>{
+    response.send('jquery ajax  ')
+});
+
+app.listen(8000, ()=>{
+    console.log('this server is ready , port is 8000')
+})
+```
+
+### 同源策略
+
+Ajax 默认遵守同源策略
+
+为保证安全，必须保证同源策略： 协议、域名、 端口号必须相同
+
+### 跨域解决方法
+
+#### JSONP
+
+非官方实现， 借助img link inframe script ,jsonp 借助script 实现
+
+```js
+<script src="http://127.0.0.1:8000/jsonp">
+<script >
+    function handle(data) {
+
+	}
+</script>
+app.all('/jsonp', (request,response)=>{
+    const data = {
+        name: 'bob'
+    }
+    let str = JSON.stringify(data)
+    // handler 处理函数调用， str数据
+    response.send(`handle(${str})`)
+});
+```
+
+##### jquery 实现
+
+```js
+
+    $('#btn').click(()=>{
+    // 固定写法 'http://127.0.0.1:8000/jquery-jsonp?callback=?‘
+    $.getJSON('http://127.0.0.1:8000/jquery-jsonp?callback=?', data => console.log(data))
+
+app.all('/jquery-jsonp', (request,response)=>{
+    const data = {
+        name: 'bob'
+    }
+    let str = JSON.stringify(data)
+    let cb = request.query.callback;
+    response.send(`${cb}(${str})`)
+});
+
+```
+
+#### cors MDN
+
+官方方案，设置响应头请求跨域
+
+```js
+app.get('/server', (request,response)=>{
+    response.setHeader('Access-Control-Allow-origin', '*');
+    response.send('Ajax get is successful')
+});
+```
+
+
 
 ## 技巧
 
@@ -4164,6 +4781,8 @@ todo: 响应式瀑布流文件
 todo:图片懒加载
 
 todo:**《前端架构师课》**
+
+todo: 浏览器通信原理
 
 todo: [正则表达式可视化-Visual Regexp：在线测试、学习、构建正则表达式 (wangwl.net)](https://wangwl.net/static/projects/visualRegex/#prefix=Y&source=Yemail)
 
@@ -4624,3 +5243,12 @@ ES6,node.js. react，vite+vue3+ts，rust / wasm,  Blazor,pnpm，ahooks，Tailwin
 * [15个手写JS，巩固你的JS基础（面试高频） - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/386894552)
 
 * JS 闭包 异步 原型链作用域
+
+* 递归获取分解循环
+
+* 正则分组提取
+
+## 报错
+
+[【转载】Node:找不到全局安装的模块 - 韩帅 - 博客园 (cnblogs.com)](https://www.cnblogs.com/hanshuai/p/14421548.html)
+
