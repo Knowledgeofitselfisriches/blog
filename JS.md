@@ -857,7 +857,9 @@ js执行：会先 预解析， 在执行代码
 
   函数提升：所有函数声明提升当前作用域的最前面
 
-  **函数是一等公民，优先编译函数**
+  **函数是一等公民，优先编译函数 **
+
+  [彻底解决 JS 变量提升| 一题一图，超详细包教包会😉 - 掘金 (juejin.cn)](https://juejin.cn/post/6933377315573497864#heading-10)
 
   ```js
   console.log(a); //function a(){}
@@ -4108,10 +4110,14 @@ reg.replace(/andy/g 'andy') : // 全局搜索 替换字符串
 提取
 
 ```js
+/pattern/.exec(string): 匹配成功返回结果， 失败返回null
+// 分组提取
 var reg = /(\d{4})-\d{1,2}-\d{1,2}/;
 if (reg.test(dateStr)) {
   console.log(RegExp.$1);
 }
+
+
 ```
 
 
@@ -4376,12 +4382,69 @@ forEach()
 
 ###  Http协议
 
-#### 请求方式
+#### 请求组成：
 
-* get
-* Post
+##### 请求行
+
+```
+请求方式  url  http协议版本
+```
+
+##### 请求头
+
+说明客户端的基本信息通知服务器
+
+```
+name:value\r\n
+name:value\r\n
+```
+
+**最后为空行 通知header结束**，分割请求头、请求体
+
+##### 请求体 
+
+**只有POST 才有请求体**
 
 #### 状态码
+
+#### url编码
+
+安全的英文字母、标点、数字，其它非安全的 用ASCII码来表示非英文字符
+
+```js
+encodeURI('中文')
+decodeURL('%E4%B8%AD%E6%96%87')
+```
+
+#### 数据交换格式
+
+XML: 格式臃肿，信息密度小，体积大，传输效率低
+
+JSON:
+
+* 对象解构 {} 以key:value 组成的键值对， key必须英文双引号包裹， value可以是其他类型 数字、字符串、布尔、null、数组
+
+  对象
+
+* 数组结构 [] 的内容， 类型可为数字、字符串、布尔、null、数组、对象
+
+**注意**
+
+* JSON 属性名必须双引号包裹
+* 字符串必须双引号包裹
+* 不能写注释
+* 最外层使用【】，{}包裹
+* 值不能为undefined 或 函数
+
+##### 转换
+
+```js
+  let jsonStr = '{"name":"hello"}'
+  // 反序列化
+  let obj = JSON.parse(jsonStr);
+ // 序列化
+ let str = JSON.stringify(obj);
+```
 
 
 
@@ -4436,7 +4499,7 @@ app.listen(8000, ()=>{
  node .\server.js
 ```
 
-发送请求
+发送POST请求
 
 ```js
     const  btn = document.getElementById('btn');
@@ -4444,7 +4507,8 @@ app.listen(8000, ()=>{
     btn.addEventListener('click',function () {
             const xhr = new XMLHttpRequest();
             xhr.open('POST', 'http://127.0.0.1:8000/server')
-            xhr.setRequestHeader('content-type','text/html')
+        	// 固定写法
+            xhr.setRequestHeader('Content-type','text/html')
             // 配合后端的 自定义请求头
             xhr.setRequestHeader('name','jane')
             xhr.send();
@@ -4478,7 +4542,9 @@ btn.addEventListener('click',function () {
         // 断网
         xhr.onerror = () => alert('网络异常')
         xhr.open('GET', 'http://127.0.0.1:8000/setTime')
-        xhr.send();
+       
+    	// 以查询字符串获取
+        xhr.send('user=admin&pass=admin');
 
         xhr.onreadystatechange = function () {
             if(4 === xhr.readyState && 200 <= xhr.status && 300 >= xhr.status){
@@ -4536,6 +4602,76 @@ btn.addEventListener('click',function () {
 })
 ```
 
+### XMLHttpRequestLevel2
+
+旧版没有进度信息，只有是否完成
+
+值只支持文本数据传输，无法读取上传文件
+
+#### 新特性
+
+* HTTP请求时限
+
+* Formdata 对象管理表单数据
+
+  ```js
+  let fd = new FormData();
+  fd.append('uname','admin')
+  fd.append('passw','admin')
+  btn.addEventListener('click',function () {
+          const xhr = new XMLHttpRequest();
+          xhr.open('GET', 'http://127.0.0.1:8000/setTime')
+         // 装填
+          xhr.send(fd);
+  
+      }
+  ```
+
+* 上传文件
+
+  ```js
+      const  btn = document.getElementById('btn');
+      const  file = document.getElementById('file');
+  
+  
+      btn.addEventListener('click',function () {
+          let files = file.files
+          if (files.length <= 0){
+              return alert('请选择上传的文件')
+          }
+          const fd = new FormData();
+          fd.append('avatar', files[0])
+  
+          const xhr = new XMLHttpRequest();
+  
+          xhr.open('POST', 'http://127.0.0.1:8000/api/uoload')
+          xhr.send(fd);
+          xhr.onreadystatechange = function () {
+              if(4 === xhr.readyState && xhr.status === 200){
+                  let data = JSON.parse(xhr.response)
+                  if(data.status === 200){
+                      const  images = document.getElementById('images');
+                      images.src = url + data.url;
+                  }else{
+                      console.log('上传失败'+ data.msg)
+                  }
+              }
+          }
+          // 计算上传进度
+          xhr.upload.onprogress =  e => {
+              if(e.lengthComputable){
+                  let percentComplete = Math.ceil((e.loaded / e.total) *  100)
+              }
+          }
+      })
+  ```
+
+  
+
+* 数据传输的进度信息
+
+
+
 ### JQuery
 
 可使用cdn引入jquery
@@ -4563,12 +4699,17 @@ app.all('/server', (request,response)=>{
 
 todo： [尚硅谷Web前端axios入门与源码解析_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1wr4y1K7tq?spm_id_from=333.788.b_636f6d6d656e74.26)
 
-发送ajax 组件
+发送ajax 组件： 相比jQuery 更加轻量级
 
 ```js
 app.get('/axios', (request,response)=>{
     response.send('jquery ajax  ')
 });
+// get发送
+axios.get(url, {params: paramObj}, ).then(respones => {
+            console.log(respones.data)
+        })
+// POST发送
 const  btn = document.getElementById('btn');
 
 axios.defaults.baseURL = 'http://127.0.0.1:8000'
@@ -4592,8 +4733,7 @@ btn.addEventListener('click',()=> {
 })
 
 // 通用发送
-axios(
-           {
+axios( {
                url:'/axios',
                method:'GET',
                params: {
@@ -4608,9 +4748,7 @@ axios(
                    user:'admin',
                    pass:'admin'
                }
-           }
-
-       ).then(response => console.log(response.status));
+           } ).then(response => console.log(response.status));
 // fetch 发送
   fetch(url, {
             method:'GET',
@@ -4641,13 +4779,19 @@ app.listen(8000, ()=>{
 
 Ajax 默认遵守同源策略
 
-为保证安全，必须保证同源策略： 协议、域名、 端口号必须相同
+为保证安全，必须保证同源策略： **协议、域名、 端口号**必须相同
 
-### 跨域解决方法
+* 无法读取 Cookie、localStorage、 indexedDB
+* 无法操作DOM
+* 无法发送DOM
+
+### 跨域
+
+浏览器会将跨域的回应数据拦截
 
 #### JSONP
 
-非官方实现， 借助img link inframe script ,jsonp 借助script 实现
+非官方实现， 借助img link inframe script ,jsonp 借助script 实现，只支持GET.不依赖XHRHttpRequest
 
 ```js
 <script src="http://127.0.0.1:8000/jsonp">
@@ -4669,10 +4813,20 @@ app.all('/jsonp', (request,response)=>{
 ##### jquery 实现
 
 ```js
-
+   // jqeury 会自动创建SCript 在成功后成功
     $('#btn').click(()=>{
     // 固定写法 'http://127.0.0.1:8000/jquery-jsonp?callback=?‘
     $.getJSON('http://127.0.0.1:8000/jquery-jsonp?callback=?', data => console.log(data))
+    //通用ajax
+    $.ajax({
+        url:'http://127.0.0.1:8000/jquery-jsonp?name=admin&pass=admin‘
+        dataType: 'jsonp',
+        // 自定义 服务器参数名
+        jsonp: 'callback',
+        // 自定义回调函数名称
+        jsonpCallback: 'custom'
+        success: res => {}
+    })
 
 app.all('/jquery-jsonp', (request,response)=>{
     const data = {
@@ -4694,6 +4848,113 @@ app.get('/server', (request,response)=>{
     response.setHeader('Access-Control-Allow-origin', '*');
     response.send('Ajax get is successful')
 });
+```
+
+### 接口
+
+#### 组成
+
+1. 接口名称
+2. URL
+3. 调用方式
+4. 参数格式： 参数名称、参数类型、是否必选、参数说明
+5. 响应格式: 返回值的详细描述
+6. 返回示例
+
+#### 表单
+
+```html
+<form action="www.baidu.com" method="post" target="_blank" enctype="multipart/form-data">
+
+</form>
+```
+
+表单同步提交
+
+* 表单跳转
+* 页面状态和数据丢失
+
+使用表单采集数据， ajax提交数据
+
+***阻止默认提交行为***
+
+```js
+let submit = document.querySelector('input[type="submit"]');
+submit.addEventListener('submit',function (e) {
+        e.stopPropagation();
+})
+```
+
+```js
+// 提取表单 注意name不为空
+var name=document.form1.number.value; //or form1.number.value
+var name=document.form1['number'].value //or form1['number'].value
+var name=document.forms[0].number.value;
+var name=document.forms[0]['number'].value;
+
+`jQuery`提供了`serialize`和`serializeArray`两个方法去序列化参数
+```
+
+### 模板引擎
+
+使用数据和结构 渲染页面
+
+* 减少拼接
+* 代码结构清晰
+* 阅读维护方便
+
+#### art-template 
+
+```js
+<script type="text/html" id="tpl-user">
+    <div>姓名：{{name}}</div>
+</script>
+<script>
+    let data = {name:'bob'}
+    let htmlStr = template('user', data);
+	let box = document.querySelector('.box');
+     box.innerHTML = htmlStr;v
+</script>
+```
+
+
+
+* 标注输出 {{ }}。
+
+* {{ obj[key] }}
+
+* 原文输出 {{@ html}} : 包含html标签， 
+
+* 条件输出
+
+```js
+
+{{ if flag === 0 }} 
+
+{{ else if }}
+
+{{ / if }} 
+
+
+```
+
+* for
+
+```js
+
+{{ each}} 
+
+{{$index }} {{$value}}
+
+{{ / each }} 
+
+```
+
+* 过滤器
+
+```js
+{{ value | fliterName}}:// 将值给 fliterName 过滤 返回新结果
+template.defaults.imports.filterName = function(value){}
 ```
 
 
@@ -4732,7 +4993,49 @@ window.getSelection ? window.getSelection().removeAllRanges() : document.selecti
  X && X()
 ```
 
+### 防抖 
 
+只有最后一次触发生效
+
+```js
+ 	let timer = null;
+    let cache = {}
+    const  btn = document.getElementById('btn');
+    function debounceSearch(keywords) {
+        timer = setTimeout(()=> {
+            let result = getResult();
+            cache[keywords] = result;
+        },3000)
+    }
+    btn.addEventListener('click',function () {
+        clearTimeout(timer);
+        // 缓存处理
+        if( cache[keywords]){
+            // 返回缓存处理
+            return handleData(cache[keywords])
+        }
+        debounceSearch(keywords)
+    })
+```
+
+### 节流
+
+减少事件触发概率，只执行一部分
+
+```js
+let timer = null;
+const  btn = document.getElementById('btn');
+btn.addEventListener('click',function (e) {
+    if(timer){return }
+    clearTimeout(timer);
+   
+    timer = setTimeout(()=>{
+        //code
+         // 执行完毕，再打开节流阀
+        timer = null
+    },16)
+})
+```
 
 ## **专栏**
 
@@ -4766,6 +5069,8 @@ indexOf()
 
 this :总结
 
+todo: 同源策略
+
 todo: 回调地狱
 
 todo:JS执行机制
@@ -4787,12 +5092,9 @@ todo: 浏览器通信原理
 todo: [正则表达式可视化-Visual Regexp：在线测试、学习、构建正则表达式 (wangwl.net)](https://wangwl.net/static/projects/visualRegex/#prefix=Y&source=Yemail)
 
 * headless ui
-
 * place-items：center： 垂直水平居中
-
 * clip-path：polygon（点）
 * clip-path：circle（）  圆形 shape-outside：circle 改变占位形状
-
 * background：url：picsum.photos/200(定义宽，随机给图片)
 
 ### 查找属性，类型信息
@@ -5224,6 +5526,8 @@ ES6,node.js. react，vite+vue3+ts，rust / wasm,  Blazor,pnpm，ahooks，Tailwin
 一本讲JavaScript的硬书，以JavaScript这门语言为栗子，讲述编程语言的特性（动态语言、函数式编程、面向对象编程等等）。作者周爱民老师是前支付宝架构师，现[豌豆荚](https://www.zhihu.com/search?q=豌豆荚&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A157022092})架构师。
 
 **《高性能JavaScript》**, **《Node.js开发指南》**,**《深入浅出Node.js》**，**《Web性能权威指南》**《深入理解JavaScript特性》，《Java编程思想》。**《ES6标准入门（第三版）》**
+
+《你不知道的JavaScript》
 
 ## 面试
 
